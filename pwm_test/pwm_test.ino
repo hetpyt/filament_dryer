@@ -7,7 +7,7 @@ test comment
 #include <TM1637Display.h>
 
 #define DEBUG
-#define MAX_TARGET_TEMP 70.0
+#define MAX_TARGET_TEMP 70
 #define MAIN_LOOP_DELAY 100
 // menu
 #define MENU_DELAY  20  
@@ -17,7 +17,7 @@ test comment
 #define HT1_NOMINAL_RESISTANCE     100000
 #define HT1_NOMINAL_TEMPERATURE    25
 #define HT1_B_VALUE                3950
-#define HT1_MAX_TEMP               100.0
+#define HT1_MAX_TEMP               100
 // heather 
 #define PWN_PIN 6
 #define MAX_PWM 200 // power limit
@@ -36,8 +36,8 @@ const uint8_t SEG_DEGREE[] = {
   SEG_A | SEG_B | SEG_F | SEG_G           // degree symbol
   };
 //
-volatile double _ht1_target = 40.0;
-volatile double _ht1_temp = 0.0;
+volatile uint8_t _ht1_target = 40;
+volatile uint8_t _ht1_temp = 0;
 volatile boolean _enc_state0, _enc_lastState, _enc_turnFlag;
 
 uint8_t _dsp_buff[4] = {0,0,0,0};
@@ -50,8 +50,8 @@ TM1637Display _dsp(DSP_CLK_PIN, DSP_DIO_PIN);
 
 void set_buffer_temp(uint8_t sym, int temp) {
   _dsp_buff[0] = sym;
-  _dsp_buff[1] = _dsp.encodeDigit();
-  _dsp_buff[1] = _dsp.encodeDigit();
+  //_dsp_buff[1] = _dsp.encodeDigit();
+  //_dsp_buff[1] = _dsp.encodeDigit();
   
   _dsp_buff[3] = DSP_SYM_DEG;
     
@@ -68,7 +68,7 @@ void timer_handle_interrupts(int timer) {
   // get ht1 temp
   _ht1_temp = _ht1->readCelsius();
   // check illegal temp values
-  if (_ht1_temp <= 0.0 || _ht1_temp >= HT1_MAX_TEMP) {
+  if (_ht1_temp <= 0 || _ht1_temp >= HT1_MAX_TEMP) {
     analogWrite(PWN_PIN, 0); // turn off heather
     return;
   }
