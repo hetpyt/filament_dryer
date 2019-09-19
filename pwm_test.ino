@@ -1,3 +1,6 @@
+/*
+test comment
+*/
 #include <timer-api.h>
 #include <Thermistor.h>
 #include <NTC_Thermistor.h>
