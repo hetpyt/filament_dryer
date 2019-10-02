@@ -1,7 +1,7 @@
 /*
 test comment
 */
-#include <timer-api.h>
+//#include <timer-api.h>
 #include <Thermistor.h>
 #include <NTC_Thermistor.h>
 #include <TM1637Display.h>
@@ -12,7 +12,7 @@ test comment
 #define MAIN_LOOP_DELAY 100
 // menu
 #define MENU_DELAY  100 
-#define LAST_MENU_PAGE  2
+#define LAST_MENU_PAGE  3
 // heather thermistor config HT1
 #define HT1_PIN             A1
 #define HT1_REFERENCE_RESISTANCE   10000
@@ -21,17 +21,18 @@ test comment
 #define HT1_B_VALUE                3950
 #define HT1_MAX_TEMP               100
 // heather 
-#define PWN_PIN 6
+#define PWN_PIN 9
 #define MAX_PWM 200 // power limit
 // fan
-#define FAN_PWM_PIN 9
+#define FAN_PWM_PIN 10//9
 // display
 #define DSP_CLK_PIN 7
-#define DSP_DIO_PIN 8
+#define DSP_DIO_PIN 6
 #define DSP_SYM_DEG (SEG_A | SEG_B | SEG_F | SEG_G)
 #define DSP_SYM_T   (SEG_D | SEG_E | SEG_F | SEG_G)
 #define DSP_SYM_C   (SEG_D | SEG_E | SEG_G)
 #define DSP_SYM_H   (SEG_C | SEG_E | SEG_F | SEG_G)
+#define DSP_SYM_F   (SEG_A | SEG_E | SEG_F | SEG_G)
 
 
 // encoder
@@ -57,6 +58,8 @@ volatile uint8_t _dsp_buff[4] = {0,0,0,0};
 volatile uint8_t _menuPage = 0;
 volatile uint16_t _menuDelay = 0;
 
+volatile uint8_t _fan_pwm = 50;
+
 volatile uint8_t _timer_hours = 1; // working time in hours to configure in menu
 volatile uint16_t _working_counter_100ms = 0;
 
@@ -74,12 +77,16 @@ void set_dsp_buffer(uint8_t sym0, uint8_t num, uint8_t sym3) {
 void setup() {
   Serial.begin(9600);
   _dsp.setBrightness(3);
-  timer_init_ISR_10Hz(TIMER_DEFAULT);
+  //timer_init_ISR_10Hz(TIMER_DEFAULT);
   attachInterrupt(digitalPinToInterrupt(ENC_A), int0, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENC_PB), int1, LOW);
+  pinMode(PWN_PIN, OUTPUT);
+  pinMode(FAN_PWM_PIN, OUTPUT);
+  
 }
 
-void timer_handle_interrupts(int timer) {
+//void timer_handle_interrupts(int timer) {
+void check_temperature() {
   _working_counter_100ms++; 
   // get ht1 temp
   _ht1_temp = _ht1->readCelsius();
@@ -125,6 +132,8 @@ void int1() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  check_temperature();
+  
   if (_menuPage == 0) {
     // show current temperature
     //_dsp.clear();
@@ -154,8 +163,16 @@ void loop() {
     //_dsp.setSegments(SEG_HOURS, 2, 2);
     set_dsp_buffer(DSP_SYM_T, _timer_hours, DSP_SYM_H);
   }
+  else if (_menuPage == 3) {
+    _fan_pwm += _enc_counter;
+    _enc_counter = 0;
+    set_dsp_buffer(DSP_SYM_F, map(_fan_pwm, 0, 0xff, 0, 99), 0);
+    //analogWrite(FAN_PWM_PIN, _fan_pwm);
+  }
   // update display
   _dsp.setSegments(_dsp_buff);
+
+  analogWrite(FAN_PWM_PIN, _fan_pwm);
 
   delay(MAIN_LOOP_DELAY);
 
