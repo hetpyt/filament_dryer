@@ -21,10 +21,11 @@ test comment
 #define HT1_B_VALUE                3950
 #define HT1_MAX_TEMP               100
 // heather 
-#define PWN_PIN 9
+#define PWN_PIN 10//9
 #define MAX_PWM 200 // power limit
 // fan
-#define FAN_PWM_PIN 10//9
+#define FAN_PWM_PIN 9//10
+#define FAN_MAX_PWM 30
 // display
 #define DSP_CLK_PIN 7
 #define DSP_DIO_PIN 6
@@ -166,7 +167,9 @@ void loop() {
   else if (_menuPage == 3) {
     _fan_pwm += _enc_counter;
     _enc_counter = 0;
-    set_dsp_buffer(DSP_SYM_F, map(_fan_pwm, 0, 0xff, 0, 99), 0);
+    if (_fan_pwm > FAN_MAX_PWM) _fan_pwm = FAN_MAX_PWM;
+    //set_dsp_buffer(DSP_SYM_F, map(_fan_pwm, 0, 0xff, 0, 99), 0);
+    set_dsp_buffer(DSP_SYM_F, _fan_pwm, 0);
     //analogWrite(FAN_PWM_PIN, _fan_pwm);
   }
   // update display
